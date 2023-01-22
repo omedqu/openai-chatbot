@@ -1,5 +1,7 @@
 import os
 import configparser
+import webbrowser
+
 import openai
 import tkinter as tk
 from tkinter import Text, filedialog, Menu, font, simpledialog, messagebox
@@ -27,7 +29,6 @@ else:
     print("Configuration file already exists")
 
 config.read(config_path)
-
 
 if not os.path.exists(config_path):
     config["Style"] = {"current_style": "dark"}
@@ -77,7 +78,6 @@ root.geometry("%dx%d+%d+%d" % (480, 869, x, y))
 root.resizable(False, False)
 root.configure(background="dimgray")
 
-
 prompt = tk.Text(root, height=5, wrap='char')
 prompt.configure(background="white", foreground="black", font=("Calibri", 14))
 prompt.grid(row=2, sticky='s')
@@ -94,6 +94,7 @@ frame = tk.Frame(root)
 frame.grid(row=3, sticky='s')
 
 defined_width = 470
+
 
 def copy_latest_response():
     latest_response = previous_prompts_responses[-1][1]
@@ -129,7 +130,7 @@ def clear_conversation():
 
 def save_conversation():
     conversation = response_text.get("1.0", 'end-1c')
-    filename = filedialog.asksaveasfilename(title=textsaveconv, defaultextension=".txt",
+    filename = filedialog.asksaveasfilename(title="Save conversation", defaultextension=".txt",
                                             filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
     with open(filename, "w") as f:
         f.write(conversation)
@@ -140,6 +141,7 @@ def save_api_key(api_key):
     config['API'] = {'key': api_key}
     with open(config_path, 'w') as configfile:
         config.write(configfile)
+
 
 def load_api_key():
     config = configparser.ConfigParser()
@@ -156,6 +158,7 @@ def load_api_key():
 
 api_key = load_api_key()
 openai.api_key = api_key
+
 
 def change_apikey():
     new_api_key = simpledialog.askstring("Change API key", "Enter the new API key:")
@@ -241,22 +244,25 @@ def change_style_dark():
         config.write(configfile)
 
 
+def apikeyurl():
+    webbrowser.open("https://beta.openai.com/docs/quickstart/build-your-application")
+
+
 edit_menu = Menu(menu)
 edit_menu.configure(tearoff=0)
 menu.add_cascade(label="Edit", menu=edit_menu)
-edit_menu.add_command(label="Copy latest response", command=copy_latest_response)
+edit_menu.add_command(label="Copy last response", command=copy_latest_response)
 edit_menu.add_command(label="Clear conversation", command=clear_conversation)
 edit_menu.add_command(label="Save conversation", command=save_conversation)
-edit_menu.add_command(label="Change API-Key", command=change_apikey)
+edit_menu.add_command(label="Generate API-Key", command=apikeyurl)
+edit_menu.add_command(label="Set API-Key", command=change_apikey)
 edit_menu.add_command(label="Exit", command=root.destroy)
-
 
 style_menu = Menu(menu)
 style_menu.configure(tearoff=0)
 menu.add_cascade(label="Style", menu=style_menu)
 style_menu.add_command(label="Bright", command=change_style_bright)
 style_menu.add_command(label="Dark", command=change_style_dark)
-
 
 prompt.bind("<Key>", insert_line_break_at_width)
 root.bind('<Return>', reply_to_conversation)
